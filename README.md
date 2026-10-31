@@ -1,0 +1,2 @@
+# Projeto RAG com Langchain
+
