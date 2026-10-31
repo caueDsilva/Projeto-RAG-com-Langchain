@@ -1,4 +1,6 @@
-from langchain_community.document_loaders import PyPDFDirectoryLoader
+from pathlib import Path
+from pypdf import PdfReader
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
@@ -14,8 +16,17 @@ def criar_db():
     vetorizar_chunks(chunks)
 
 def carregar_documentos():
-    carregar = PyPDFDirectoryLoader(PASTA_BASE, glob="*.pdf")
-    documentos = carregar.load
+    documentos = []
+    for caminho in Path(PASTA_BASE).glob("*.pdf"):
+        leitor = PdfReader(caminho)
+        for i, pagina in enumerate(leitor.pages):
+            texto = pagina.extract_text() or ""
+            documentos.append(
+                Document(
+                    page_content=texto,
+                    metadata={"source": str(caminho), "page": i},
+                )
+            )
     return documentos
 
 def dividir_chuncks(documentos):
@@ -30,3 +41,6 @@ def dividir_chuncks(documentos):
 
 def vetorizar_chunks(chunks):
     db = Chroma.from_documents(chunks, OpenAIEmbeddings(), persist_directory="database")
+
+if __name__ == "__main__":
+    criar_db()
