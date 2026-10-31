@@ -4,6 +4,8 @@ from langchain_chroma.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 
+load_dotenv()
+
 PASTA_BASE = 'base'
 
 def criar_db():
