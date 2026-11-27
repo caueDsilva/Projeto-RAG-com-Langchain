@@ -35,8 +35,84 @@ O fluxo de funcionamento de uma arquitetura RAG pode ser dividido nas seguintes 
 - **LangChain:** Framework para construção de aplicações baseadas em modelos de linguagem.
 - **LLMs:** Modelos de linguagem responsáveis pela interpretação e geração de respostas.
 - **Embeddings:** Representações vetoriais utilizadas para transformar textos em dados numéricos.
-- **Vector Database:** Banco de dados responsável pelo armazenamento e recuperação de vetores.
+- **Vector Database:** Banco de dados (Chroma) responsável pelo armazenamento e recuperação de vetores.
 - **Semantic Search:** Técnica de busca baseada no significado e na similaridade entre informações.
+
+## Estrutura do projeto
+
+```
+.
+├── base/             # PDFs que formam a base de conhecimento
+├── database/         # Banco vetorial (Chroma), gerado automaticamente
+├── criar_db.py       # Lê os PDFs, divide em chunks e gera os embeddings
+├── main.py           # Recebe a pergunta, busca no banco e consulta o LLM
+├── .env              # Chave da API da OpenAI (não versionar)
+└── README.md
+```
+
+## Como rodar o projeto
+
+### Pré-requisitos
+
+- Python 3.10 ou superior
+- Uma chave de API da OpenAI ([platform.openai.com](https://platform.openai.com/api-keys))
+
+### 1. Clonar o repositório
+
+```bash
+git clone <url-do-repositorio>
+cd <nome-da-pasta>
+```
+
+### 2. Criar e ativar o ambiente virtual
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Linux / macOS
+source venv/bin/activate
+```
+
+### 3. Instalar as dependências
+
+```bash
+pip install pypdf langchain-core langchain-text-splitters langchain-chroma langchain-openai python-dotenv
+```
+
+### 4. Configurar a chave da OpenAI
+
+Crie um arquivo `.env` na raiz do projeto com o conteúdo:
+
+```env
+OPENAI_API_KEY=sua-chave-aqui
+```
+
+### 5. Adicionar os documentos
+
+Coloque os arquivos `.pdf` que serão usados como base de conhecimento dentro da pasta `base/`.
+
+### 6. Criar o banco vetorial
+
+```bash
+python criar_db.py
+```
+
+Esse comando lê todos os PDFs de `base/`, divide o texto em chunks (2000 caracteres, com sobreposição de 500), gera os embeddings e salva tudo na pasta `database/`.
+
+Rode esta etapa novamente sempre que adicionar ou alterar PDFs na pasta `base/`.
+
+### 7. Fazer perguntas
+
+```bash
+python main.py
+```
+
+Digite sua pergunta no terminal. O programa busca os 3 trechos mais relevantes no banco, envia ao modelo como contexto e exibe a resposta. Se nenhum trecho tiver relevância mínima (score de 0.7), ele informa que não encontrou uma informação relevante.
+
+> **Atenção:** a pasta do banco vetorial deve ter o mesmo nome nos dois scripts. Confira se `persist_directory` em `criar_db.py` e `CAMINHO_DB` em `main.py` apontam para a mesma pasta (`database`).
 
 ## Aprendizados
 
